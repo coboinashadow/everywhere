@@ -1,0 +1,100 @@
+<hta:application border="thin" maximizebutton="no" minimizebutton="no" scroll="no">
+<html>
+<title>Everywhere</title>
+<meta name="viewport" content="width=device-width">
+<body style="background-image:url('imagens/background.png'); background-color:#48b2e7; margin:0px;" onkeydown="movimento(event.keyCode);" onkeyup="solta(event.keyCode);"></body>
+<script>
+window.resizeTo(700,700); //tamanho da janela do jogo na tela do usuario
+window.moveTo(10,10); //posicao da janela do jogo na tela do usuario
+QUANTOS=6; //quantidade de oponenetes
+
+// essas <img> vao conter os oponentes
+for(i=0;i<QUANTOS;i++)document.body.innerHTML+="<img id=oponent"+i+" style='position:absolute;'>";
+
+//coordenadas da posicao inicial
+terry=[400,400];
+
+// durante o jogo a <img> do terry (left,top) muda de posicao
+document.body.innerHTML+="<img src=imagens/terry.png id=terry style='width:128px; height:128px; position:absolute; top:"+terry[0]+"px; left:"+terry[1]+"px;'>";
+
+//leftPressed upPressed rightPressed downPressed (tecla pressionada)
+keys=[false,false,false,false];
+
+figura=[]; //array de imagens dos oponentes
+sentido=[]; //array das direcoes em que os oponentes se movem
+tamanho=[]; //array com os tamanhos dos oponentes na tela
+posicao=[]; //array com coordenadas de cada oponente
+deslocamento=[]; //array das velocidades do deslocamento dos oponentes
+function initOponent(i){ //inicializa oponente
+	figura[i]=["bee","block","fish","fish2","saw"][parseInt(Math.random()*5)]; //aparencia aleatoria
+	sentido[i]=["cima","baixo","esquerda","direita"][parseInt(Math.random()*4)]; //direcao aleatoria
+	tamanho[i]=60+parseInt(Math.random()*70); //tamanho aleatorio
+
+	//posicao aleatoria do oponente
+	if(sentido[i]=="cima")posicao[i]=[0-parseInt(Math.random()*200),50+parseInt(Math.random()*600)];
+	if(sentido[i]=="direita")posicao[i]=[50+parseInt(Math.random()*600),700+parseInt(Math.random()*200)];
+	if(sentido[i]=="baixo")posicao[i]=[700+parseInt(Math.random()*200),50+parseInt(Math.random()*600)];
+	if(sentido[i]=="esquerda")posicao[i]=[50+parseInt(Math.random()*600),0-parseInt(Math.random()*200)];
+
+	//velocidade aleatoria do oponente
+	if(sentido[i]=="cima")deslocamento[i]=[3+parseInt(Math.random()*3),0];
+	if(sentido[i]=="direita")deslocamento[i]=[0,-3-parseInt(Math.random()*3)];
+	if(sentido[i]=="baixo")deslocamento[i]=[-3-parseInt(Math.random()*3),0];
+	if(sentido[i]=="esquerda")deslocamento[i]=[0,3+parseInt(Math.random()*3)];
+
+	//adiciona oponente na DOM (Document Object Model)
+	document.getElementById('oponent'+i).src="imagens/"+sentido[i]+"/"+figura[i]+".png";
+	document.getElementById('oponent'+i).style.width=tamanho[i]+"px";
+}
+for(i=0;i<QUANTOS;i++)initOponent(i); //inicializa todos os oponentes iniciais
+function gameLoop(){
+	colisao=false;
+	for(i=0;i<QUANTOS;i++){ //loop de 'gerenciamento' dos 'oponentes'
+		//se o oponente tá longe do fim da tela entao gera 'outro' oponente aleatorio
+		if(posicao[i][0]<-200||posicao[i][0]>900||posicao[i][1]<-200||posicao[i][1]>900)initOponent(i);
+
+		//calcula posicao do oponente na tela
+		posicao[i][0]+=deslocamento[i][0];
+		posicao[i][1]+=deslocamento[i][1];
+
+		//atualiza exibicao do oponente
+		document.getElementById('oponent'+i).style.top=parseInt(posicao[i][0]-tamanho[i]/2)+"px";
+		document.getElementById('oponent'+i).style.left=parseInt(posicao[i][1]-tamanho[i]/2)+"px";
+
+		//colision detect
+		if(
+			posicao[i][0]-terry[0]>-159&& //cima
+			posicao[i][0]-terry[0]<tamanho[i]/2&& //baixo
+			posicao[i][1]-terry[1]>-165&& //esquerda
+			posicao[i][1]-terry[1]<(tamanho[i]/2)-51 //direita
+		)colisao=true;
+	}
+
+	//verifica se precisa atualizar posicao do terry na tela
+	if(keys[0]&&terry[1]>140)terry[1]-=10;
+	if(keys[1]&&terry[0]>110)terry[0]-=10;
+	if(keys[2]&&terry[1]<710)terry[1]+=10;
+	if(keys[3]&&terry[0]<640)terry[0]+=10;
+
+	//redesenha o terry na tela
+	document.getElementById('terry').style.top=parseInt(terry[0]-128)+"px";
+	document.getElementById('terry').style.left=parseInt(terry[1]-148)+"px";
+
+	if(colisao)location.reload(); //gameover
+	else setTimeout("gameLoop()",10); //chama/invoca a funcao gameLoop depois de um 'delay' de 10 milissegundos
+}
+gameLoop();
+function movimento(k){
+	if(k==37)keys[0]=true; //apertou left
+	if(k==38)keys[1]=true; //apertou up
+	if(k==39)keys[2]=true; //apertou right
+	if(k==40)keys[3]=true; //apertou down
+}
+function solta(k){
+	if(k==37)keys[0]=false; //soltou left
+	if(k==38)keys[1]=false; //soltou up
+	if(k==39)keys[2]=false; //soltou right
+	if(k==40)keys[3]=false; //soltou down
+}
+</script>
+</html>
